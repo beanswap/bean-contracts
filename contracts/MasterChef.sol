@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+//https://ducky.finance
+
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -12,7 +14,7 @@ import "./EggToken.sol";
 // MasterChef is the master of Egg. He can make Egg and he is a fair guy.
 //
 // Note that it's ownable and the owner wields tremendous power. The ownership
-// will be transferred to a governance smart contract once EGG is sufficiently
+// will be transferred to a governance smart contract once DUCKY is sufficiently
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
@@ -25,7 +27,7 @@ contract MasterChef is Ownable {
         uint256 amount;         // How many LP tokens the user has provided.
         uint256 rewardDebt;     // Reward debt. See explanation below.
         //
-        // We do some fancy math here. Basically, any point in time, the amount of EGGs
+        // We do some fancy math here. Basically, any point in time, the amount of DUCKYs
         // entitled to a user but is pending to be distributed is:
         //
         //   pending reward = (user.amount * pool.accEggPerShare) - user.rewardDebt
@@ -40,17 +42,17 @@ contract MasterChef is Ownable {
     // Info of each pool.
     struct PoolInfo {
         IBEP20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. EGGs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that EGGs distribution occurs.
-        uint256 accEggPerShare;   // Accumulated EGGs per share, times 1e12. See below.
+        uint256 allocPoint;       // How many allocation points assigned to this pool. DUCKYs to distribute per block.
+        uint256 lastRewardBlock;  // Last block number that DUCKYs distribution occurs.
+        uint256 accEggPerShare;   // Accumulated DUCKYs per share, times 1e12. See below.
         uint16 depositFeeBP;      // Deposit fee in basis points
     }
 
-    // The EGG TOKEN!
+    // The DUCKY TOKEN!
     EggToken public egg;
     // Dev address.
     address public devaddr;
-    // EGG tokens created per block.
+    // DUCKY tokens created per block.
     uint256 public eggPerBlock;
     // Bonus muliplier for early egg makers.
     uint256 public constant BONUS_MULTIPLIER = 1;
@@ -63,8 +65,10 @@ contract MasterChef is Ownable {
     mapping (uint256 => mapping (address => UserInfo)) public userInfo;
     // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
-    // The block number when EGG mining starts.
+    // The block number when DUCKY mining starts.
     uint256 public startBlock;
+    address setup;
+    bool public paused = true;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -90,7 +94,7 @@ contract MasterChef is Ownable {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function add(uint256 _allocPoint, IBEP20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
+    function add(uint256 _allocPoint, IBEP20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwnerAndSetup {
         require(_depositFeeBP <= 10000, "add: invalid deposit fee basis points");
         if (_withUpdate) {
             massUpdatePools();
@@ -106,7 +110,7 @@ contract MasterChef is Ownable {
         }));
     }
 
-    // Update the given pool's EGG allocation point and deposit fee. Can only be called by the owner.
+    // Update the given pool's DUCKY allocation point and deposit fee. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
         require(_depositFeeBP <= 10000, "set: invalid deposit fee basis points");
         if (_withUpdate) {
@@ -122,7 +126,7 @@ contract MasterChef is Ownable {
         return _to.sub(_from).mul(BONUS_MULTIPLIER);
     }
 
-    // View function to see pending EGGs on frontend.
+    // View function to see pending DUCKYs on frontend.
     function pendingEgg(uint256 _pid, address _user) external view returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -163,8 +167,9 @@ contract MasterChef is Ownable {
         pool.lastRewardBlock = block.number;
     }
 
-    // Deposit LP tokens to MasterChef for EGG allocation.
+    // Deposit LP tokens to MasterChef for DUCKY allocation.
     function deposit(uint256 _pid, uint256 _amount) public {
+        require(paused == false, "!paused");
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
@@ -217,7 +222,7 @@ contract MasterChef is Ownable {
         emit EmergencyWithdraw(msg.sender, _pid, amount);
     }
 
-    // Safe egg transfer function, just in case if rounding error causes pool to not have enough EGGs.
+    // Safe egg transfer function, just in case if rounding error causes pool to not have enough DUCKYs.
     function safeEggTransfer(address _to, uint256 _amount) internal {
         uint256 eggBal = egg.balanceOf(address(this));
         if (_amount > eggBal) {
@@ -243,4 +248,19 @@ contract MasterChef is Ownable {
         massUpdatePools();
         eggPerBlock = _eggPerBlock;
     }
+
+    function updatePaused(bool _value) public onlyOwner {
+        paused = _value;
+    }
+
+    function addSetup(address _setup) external {
+        require(setup == address(0));
+        setup = _setup;
+    }
+
+    modifier onlyOwnerAndSetup() {
+        require(owner() == msg.sender || setup == msg.sender, "Ownable: caller is not the owner or setup");
+        _;
+    }    
+
 }

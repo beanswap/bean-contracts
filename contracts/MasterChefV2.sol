@@ -13,7 +13,7 @@ import "./EggToken.sol";
 // MasterChef is the master of Egg. He can make Egg and he is a fair guy.
 //
 // Note that it's ownable and the owner wields tremendous power. The ownership
-// will be transferred to a governance smart contract once EGG is sufficiently
+// will be transferred to a governance smart contract once DUCKY is sufficiently
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
@@ -26,7 +26,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         uint256 amount;         // How many LP tokens the user has provided.
         uint256 rewardDebt;     // Reward debt. See explanation below.
         //
-        // We do some fancy math here. Basically, any point in time, the amount of EGGs
+        // We do some fancy math here. Basically, any point in time, the amount of DUCKYs
         // entitled to a user but is pending to be distributed is:
         //
         //   pending reward = (user.amount * pool.accEggPerShare) - user.rewardDebt
@@ -41,17 +41,17 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     // Info of each pool.
     struct PoolInfo {
         IBEP20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. EGGs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that EGGs distribution occurs.
-        uint256 accEggPerShare;   // Accumulated EGGs per share, times 1e12. See below.
+        uint256 allocPoint;       // How many allocation points assigned to this pool. DUCKYs to distribute per block.
+        uint256 lastRewardBlock;  // Last block number that DUCKYs distribution occurs.
+        uint256 accEggPerShare;   // Accumulated DUCKYs per share, times 1e12. See below.
         uint16 depositFeeBP;      // Deposit fee in basis points
     }
 
-    // The EGG TOKEN!
+    // The DUCKY TOKEN!
     EggToken public egg;
     // Dev address.
     address public devaddr;
-    // EGG tokens created per block.
+    // DUCKY tokens created per block.
     uint256 public eggPerBlock;
     // Bonus muliplier for early egg makers.
     uint256 public constant BONUS_MULTIPLIER = 1;
@@ -64,7 +64,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
     // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
-    // The block number when EGG mining starts.
+    // The block number when DUCKY mining starts.
     uint256 public startBlock;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
@@ -116,7 +116,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         }));
     }
 
-    // Update the given pool's EGG allocation point and deposit fee. Can only be called by the owner.
+    // Update the given pool's DUCKY allocation point and deposit fee. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
         require(_depositFeeBP <= 10000, "set: invalid deposit fee basis points");
         if (_withUpdate) {
@@ -132,7 +132,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         return _to.sub(_from).mul(BONUS_MULTIPLIER);
     }
 
-    // View function to see pending EGGs on frontend.
+    // View function to see pending DUCKYs on frontend.
     function pendingEgg(uint256 _pid, address _user) external view returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -173,7 +173,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         pool.lastRewardBlock = block.number;
     }
 
-    // Deposit LP tokens to MasterChef for EGG allocation.
+    // Deposit LP tokens to MasterChef for DUCKY allocation.
     function deposit(uint256 _pid, uint256 _amount) public nonReentrant {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -227,7 +227,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         emit EmergencyWithdraw(msg.sender, _pid, amount);
     }
 
-    // Safe egg transfer function, just in case if rounding error causes pool to not have enough EGGs.
+    // Safe egg transfer function, just in case if rounding error causes pool to not have enough DUCKYs.
     function safeEggTransfer(address _to, uint256 _amount) internal {
         uint256 eggBal = egg.balanceOf(address(this));
         bool transferSuccess = false;

@@ -1,12 +1,12 @@
-# Goose Finance
+# Ducky Finance
 
-https://goosedefi.com Feel free to read the code. More details coming soon.
+https://ducky.finance Feel free to read the code. More details coming soon.
 
 ## Deployed Contracts / Hash
 
 ### BSCMAINNET
 
-- EggToken - https://bscscan.com/token/0xf952fc3ca7325cc27d15885d37117676d25bfda6
-- MasterChef - https://bscscan.com/address/0xe70E9185F5ea7Ba3C5d63705784D8563017f2E57
-- Timelock - https://bscscan.com/address/0x2Ef488DE034567e9B8D312928fD52812A242aB3A
+- DuckyToken - https://bscscan.com/token/0x94dF36a61B489c95E66A830c366528FF063687b4
+- MasterChef - https://bscscan.com/address/0x26E55c521E86851C21fa56b00DB764c434FaB7B6
+- Timelock - https://bscscan.com/address/0x75f2241a39A152D71c48C74a880379d42454bea1
 - MultiCall - https://bscscan.com/address/0x1ee38d535d541c55c9dae27b12edf090c608e6fb

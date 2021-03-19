@@ -354,7 +354,7 @@ contract Lottery is OwnableUpgradeable {
         return reward.div(1e12);
     }
 
-    // Safe egg transfer function, just in case if rounding error causes pool to not have enough EGGs.
+    // Safe egg transfer function, just in case if rounding error causes pool to not have enough DUCKYs.
     function safeEggTransfer(address _to, uint256 _amount) internal {
         uint256 eggBal = egg.balanceOf(address(this));
         if (_amount > eggBal) {
