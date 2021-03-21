@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-//https://ducky.finance
+//https://beanswap.app
 
 pragma solidity 0.6.12;
 
