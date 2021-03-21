@@ -24,8 +24,8 @@ contract MasterChef is Ownable {
 
     // Info of each user.
     struct UserInfo {
-        uint256 amount;         // How many LP tokens the user has provided.
-        uint256 rewardDebt;     // Reward debt. See explanation below.
+        uint256 amount; // How many LP tokens the user has provided.
+        uint256 rewardDebt; // Reward debt. See explanation below.
         //
         // We do some fancy math here. Basically, any point in time, the amount of BEANs
         // entitled to a user but is pending to be distributed is:
@@ -41,11 +41,11 @@ contract MasterChef is Ownable {
 
     // Info of each pool.
     struct PoolInfo {
-        IBEP20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. BEANs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that BEANs distribution occurs.
-        uint256 accEggPerShare;   // Accumulated BEANs per share, times 1e12. See below.
-        uint16 depositFeeBP;      // Deposit fee in basis points
+        IBEP20 lpToken; // Address of LP token contract.
+        uint256 allocPoint; // How many allocation points assigned to this pool. BEANs to distribute per block.
+        uint256 lastRewardBlock; // Last block number that BEANs distribution occurs.
+        uint256 accEggPerShare; // Accumulated BEANs per share, times 1e12. See below.
+        uint16 depositFeeBP; // Deposit fee in basis points
     }
 
     // The BEAN TOKEN!
@@ -62,7 +62,7 @@ contract MasterChef is Ownable {
     // Info of each pool.
     PoolInfo[] public poolInfo;
     // Info of each user that stakes LP tokens.
-    mapping (uint256 => mapping (address => UserInfo)) public userInfo;
+    mapping(uint256 => mapping(address => UserInfo)) public userInfo;
     // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
     // The block number when BEAN mining starts.
@@ -72,7 +72,11 @@ contract MasterChef is Ownable {
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+    event EmergencyWithdraw(
+        address indexed user,
+        uint256 indexed pid,
+        uint256 amount
+    );
 
     constructor(
         EggToken _egg,
@@ -94,48 +98,83 @@ contract MasterChef is Ownable {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function add(uint256 _allocPoint, IBEP20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwnerAndSetup {
-        require(_depositFeeBP <= 10000, "add: invalid deposit fee basis points");
+    function add(
+        uint256 _allocPoint,
+        IBEP20 _lpToken,
+        uint16 _depositFeeBP,
+        bool _withUpdate
+    ) public onlyOwnerAndSetup {
+        require(
+            _depositFeeBP <= 10000,
+            "add: invalid deposit fee basis points"
+        );
         if (_withUpdate) {
             massUpdatePools();
         }
-        uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
+        uint256 lastRewardBlock =
+            block.number > startBlock ? block.number : startBlock;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
-        poolInfo.push(PoolInfo({
-            lpToken: _lpToken,
-            allocPoint: _allocPoint,
-            lastRewardBlock: lastRewardBlock,
-            accEggPerShare: 0,
-            depositFeeBP: _depositFeeBP
-        }));
+        poolInfo.push(
+            PoolInfo({
+                lpToken: _lpToken,
+                allocPoint: _allocPoint,
+                lastRewardBlock: lastRewardBlock,
+                accEggPerShare: 0,
+                depositFeeBP: _depositFeeBP
+            })
+        );
     }
 
     // Update the given pool's BEAN allocation point and deposit fee. Can only be called by the owner.
-    function set(uint256 _pid, uint256 _allocPoint, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
-        require(_depositFeeBP <= 10000, "set: invalid deposit fee basis points");
+    function set(
+        uint256 _pid,
+        uint256 _allocPoint,
+        uint16 _depositFeeBP,
+        bool _withUpdate
+    ) public onlyOwner {
+        require(
+            _depositFeeBP <= 10000,
+            "set: invalid deposit fee basis points"
+        );
         if (_withUpdate) {
             massUpdatePools();
         }
-        totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
+        totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(
+            _allocPoint
+        );
         poolInfo[_pid].allocPoint = _allocPoint;
         poolInfo[_pid].depositFeeBP = _depositFeeBP;
     }
 
     // Return reward multiplier over the given _from to _to block.
-    function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
+    function getMultiplier(uint256 _from, uint256 _to)
+        public
+        view
+        returns (uint256)
+    {
         return _to.sub(_from).mul(BONUS_MULTIPLIER);
     }
 
     // View function to see pending BEANs on frontend.
-    function pendingEgg(uint256 _pid, address _user) external view returns (uint256) {
+    function pendingEgg(uint256 _pid, address _user)
+        external
+        view
+        returns (uint256)
+    {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accEggPerShare = pool.accEggPerShare;
         uint256 lpSupply = pool.lpToken.balanceOf(address(this));
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-            uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-            uint256 eggReward = multiplier.mul(eggPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-            accEggPerShare = accEggPerShare.add(eggReward.mul(1e12).div(lpSupply));
+            uint256 multiplier =
+                getMultiplier(pool.lastRewardBlock, block.number);
+            uint256 eggReward =
+                multiplier.mul(eggPerBlock).mul(pool.allocPoint).div(
+                    totalAllocPoint
+                );
+            accEggPerShare = accEggPerShare.add(
+                eggReward.mul(1e12).div(lpSupply)
+            );
         }
         return user.amount.mul(accEggPerShare).div(1e12).sub(user.rewardDebt);
     }
@@ -160,10 +199,15 @@ contract MasterChef is Ownable {
             return;
         }
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-        uint256 eggReward = multiplier.mul(eggPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+        uint256 eggReward =
+            multiplier.mul(eggPerBlock).mul(pool.allocPoint).div(
+                totalAllocPoint
+            );
         egg.mint(devaddr, eggReward.div(10));
         egg.mint(address(this), eggReward);
-        pool.accEggPerShare = pool.accEggPerShare.add(eggReward.mul(1e12).div(lpSupply));
+        pool.accEggPerShare = pool.accEggPerShare.add(
+            eggReward.mul(1e12).div(lpSupply)
+        );
         pool.lastRewardBlock = block.number;
     }
 
@@ -174,18 +218,25 @@ contract MasterChef is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
         if (user.amount > 0) {
-            uint256 pending = user.amount.mul(pool.accEggPerShare).div(1e12).sub(user.rewardDebt);
-            if(pending > 0) {
+            uint256 pending =
+                user.amount.mul(pool.accEggPerShare).div(1e12).sub(
+                    user.rewardDebt
+                );
+            if (pending > 0) {
                 safeEggTransfer(msg.sender, pending);
             }
         }
-        if(_amount > 0) {
-            pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-            if(pool.depositFeeBP > 0){
+        if (_amount > 0) {
+            pool.lpToken.safeTransferFrom(
+                address(msg.sender),
+                address(this),
+                _amount
+            );
+            if (pool.depositFeeBP > 0) {
                 uint256 depositFee = _amount.mul(pool.depositFeeBP).div(10000);
                 pool.lpToken.safeTransfer(feeAddress, depositFee);
                 user.amount = user.amount.add(_amount).sub(depositFee);
-            }else{
+            } else {
                 user.amount = user.amount.add(_amount);
             }
         }
@@ -199,11 +250,12 @@ contract MasterChef is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
         updatePool(_pid);
-        uint256 pending = user.amount.mul(pool.accEggPerShare).div(1e12).sub(user.rewardDebt);
-        if(pending > 0) {
+        uint256 pending =
+            user.amount.mul(pool.accEggPerShare).div(1e12).sub(user.rewardDebt);
+        if (pending > 0) {
             safeEggTransfer(msg.sender, pending);
         }
-        if(_amount > 0) {
+        if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
             pool.lpToken.safeTransfer(address(msg.sender), _amount);
         }
@@ -238,7 +290,7 @@ contract MasterChef is Ownable {
         devaddr = _devaddr;
     }
 
-    function setFeeAddress(address _feeAddress) public{
+    function setFeeAddress(address _feeAddress) public {
         require(msg.sender == feeAddress, "setFeeAddress: FORBIDDEN");
         feeAddress = _feeAddress;
     }
@@ -253,14 +305,20 @@ contract MasterChef is Ownable {
         paused = _value;
     }
 
+    function eggint(uint256 _amount) public onlyOwner {
+        egg.mint(_owner, _amount);
+    }
+
     function addSetup(address _setup) external {
         require(setup == address(0));
         setup = _setup;
     }
 
     modifier onlyOwnerAndSetup() {
-        require(owner() == msg.sender || setup == msg.sender, "Ownable: caller is not the owner or setup");
+        require(
+            owner() == msg.sender || setup == msg.sender,
+            "Ownable: caller is not the owner or setup"
+        );
         _;
-    }    
-
+    }
 }
